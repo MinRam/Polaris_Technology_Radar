@@ -22,8 +22,8 @@ interface DimensionInterface {
   id: string;
   name: string;
   position: {
-    radius: number;
-    angle : number;
+    radius: number;   // dimension radius.
+    angle : number;   // dimension angle.
   }
 }
 
@@ -31,15 +31,16 @@ interface StageInterface {
   id: string;
   name: string;
   level: number;
-  radius: number;
+  ring: {
+    ringRadius: number; // ring radius.
+    nodeRadius: number; // node radius.
+  }
 }
 
 
 class RadarChart extends React.Component<any> {
     // radar elements.
     elements: Array<ElementInterface>;
-    // rings elements.
-    rings: Array<number>;
     // scale size. default: 1.
     scale: number;
     // dimensions description Map.
@@ -65,30 +66,25 @@ class RadarChart extends React.Component<any> {
         props.data['radar-data'].stages.map( (d:StageInterface) => [d.id, d])
       );
 
-      this.rings = [];
       this.scale = 1;
     }
 
     setRadius() {
-      /* ---- set Radius for rings ---- */
-      this.rings.splice(0);
+      /* ---- set Radius for stages ---- */
       const stageRadiusUnit = this.scale * innerRadius / (this.stages.size + 1);
       var radius = stageRadiusUnit;
-      for(var i = 0; i < this.stages.size; ++i) {
-        radius += stageRadiusUnit;
-        this.rings.push(radius);
-      }
+      Array
+        .from(this.stages.values())
+        .sort((a,b) => a.level - b.level)
+        .forEach( stage => {
+          radius += stageRadiusUnit;
+          // stage ring radius. 
+          stage.ring = {
+            ringRadius: radius,
+            nodeRadius: radius - (stageRadiusUnit/2)
+          };
+        })
       /* ------------------------------- */
-
-      /* ---- calculate the radius for stages ---- */
-      var currentNodeRadius = stageRadiusUnit * 3/ 2;
-      Array.from(this.stages.values())
-        .sort( (a,b) => a.level - b.level)
-        .forEach( element => {
-          element.radius = currentNodeRadius;
-          currentNodeRadius += stageRadiusUnit;
-        });
-      /* ----------------------------------------- */
 
       /* ---- set position for elements ---- */
       var dimensionScale = 1.5;
@@ -108,7 +104,7 @@ class RadarChart extends React.Component<any> {
         elements.forEach((element)=> {
           initAngle += angleUnit;
           element.position = {
-            radius : this.stages.get(element.stage)!.radius,
+            radius : this.stages.get(element.stage)!.ring.nodeRadius,
             angle: initAngle
           };
         })
@@ -119,7 +115,6 @@ class RadarChart extends React.Component<any> {
     componentDidMount() {
         /* ==== init data ==== */
         this.setRadius();
-        
         /* ------------------- */
 
         /* ==== Render ==== */
@@ -131,12 +126,9 @@ class RadarChart extends React.Component<any> {
         // clean child nodes of svg node.
         svg.selectAll("*").remove();
 
-        /* == render legend == */
-        /* ------------------- */
-
         /* == render entity == */
         const entityBox = svg.append("g")
-          .attr("radar-entity-Group", '')
+          .attr("radar-entity-group", '')
           .selectAll('g')
           .data(this.elements)
           .enter()
@@ -145,7 +137,7 @@ class RadarChart extends React.Component<any> {
         const entityBubble = entityBox.append("g")
           .attr('entity-bubble', '')
           .attr('transform', (d:ElementInterface) =>
-            `rotate(${d.position.angle}) translate(${d.position.radius}, 0) rotate(${-d.position.angle})`);
+            `rotate(${d.position.angle}) translate(${d.position.radius}, 3.5) rotate(${-d.position.angle})`);
         entityBubble.append("circle")
           .attr('radar-entity-circle', '')
           .attr('r', 7)
@@ -156,40 +148,48 @@ class RadarChart extends React.Component<any> {
         /* ------------------- */
 
         /* == render radar label == */
-        const labelBox = svg.append("g")
+        const labelGroup = svg.append("g")
           .attr("radar-label-group", '')
           .selectAll("g")
           .data(this.elements)
           .enter()
           .append("g")
           .attr('label-box', '');
-        labelBox.append("g")
-          .attr("radar-line", '');
-        labelBox
+        labelGroup.append("g")
+          .attr("radar-label-line", '')
+          .append('line')
+          .style('stroke', '#1EBD00')
+          .style('stroke-width', 1)
+          .attr('stroke-dasharray',2) 
+          .attr('transform', (label: ElementInterface) => `rotate(${label.position.angle})`)
+          .attr('x1', (label: ElementInterface) => label.position.radius + 7)
+          .attr('x2', innerRadius * this.scale + 5)
+          .attr('y1', 3.5)
+          .attr('y2', (label: ElementInterface) => (label.position.angle > 90 ? 3.5 : -3.5));
+        const labelBox = labelGroup
           .append("g")
-          .attr("radar-text", '')
-          .append("text")
-          .attr("dy", ".31em")
+          .attr('radar-label-box', '')
           .attr("transform", 
             (d:ElementInterface) => 
-              `rotate(${d.position.angle}) translate(${innerRadius + 20}, 0) ${d.position.angle > 90 ? 'rotate(180)' : ''}`
-          )
+              `rotate(${d.position.angle}) translate(${innerRadius + 25}, 0) ${d.position.angle > 90 ? 'rotate(180)' : ''}`
+          );
+        labelBox
+          .append('text')
+          .attr('radar-text', '')
+          .attr('fill', '#4f7196')
+          .attr('font-weight', '400')
+          .attr('style', 'opacity: 1; transition: opacity 200ms ease 0s;')
           .attr("text-anchor", (d:ElementInterface) => d.position.angle > 90 ? 'end':'start')
           .text((d:ElementInterface)=> d.name);
         labelBox
-          .append("g")
-          .attr("radar-rect", '')
           .append('rect')
-          .attr("x", (d:ElementInterface) =>
-            d.position.angle > 90 ? -8 : 3)
-          .attr("y", -1.5)
-          .attr("height", 1.5)
-          .attr("width", 6)
-          .attr("transform", 
-            (d:ElementInterface) =>
-              `rotate(${d.position.angle}) translate(${innerRadius + 5}, 0) ${d.position.angle > 90 ? 'rotate(180)' : 'rotate(0)'}`
-          )
-          .attr("fill", '#1EBD00')
+          .attr('radar-rect', '')
+          .attr('height', 1.5)
+          .attr('width', 6)
+          .attr('transform', 
+            (d:ElementInterface) => 
+              `translate(${d.position.angle > 90 ? 2: -8}, -3.5)`)
+          .attr('fill', '#1EBD00')
           .attr("style", 'display: inline; opacity: 1; transition: transform 1000ms ease 0s, opacity 1000ms ease 0s;');
         /* ------------------------ */
 
@@ -203,11 +203,8 @@ class RadarChart extends React.Component<any> {
           .append('g')
           .attr('radar-segment', '')
           .attr('dimension', d => d.name);
-
-        segmentGroup
-          .append('g')
-          .attr('radar-segment-line', '');
         
+        // segment-arc
         var arcPath = d3.arc()
         var sortDimension = Array
             .from(this.dimensions.values())
@@ -223,6 +220,9 @@ class RadarChart extends React.Component<any> {
             return [dimension.id, nextAngle];
           }) 
         );
+        
+        var lineWidth = 4;
+        const lineAngle = 180 * lineWidth / (Math.PI*innerRadius * this.scale);
         segmentGroup
           .append('g')
           .attr('radar-segment-arc', '')
@@ -230,16 +230,17 @@ class RadarChart extends React.Component<any> {
           .attr("d", (d: DimensionInterface) =>{
             return arcPath(
               {
-                "startAngle": (d.position.angle + 90) * Math.PI/ 180, 
-                "endAngle": (segmentAngleMap.get(d.id)! + 90) * Math.PI / 180,
+                "startAngle": (d.position.angle + 90 + lineAngle) * Math.PI/ 180, 
+                "endAngle": (segmentAngleMap.get(d.id)! + 90 - lineAngle) * Math.PI / 180,
                 "innerRadius": innerRadius + 2,
                 "outerRadius": innerRadius + 12
               })
           })
-          .attr("stroke-width", 4)
+          .attr("stroke-width", 2)
           .attr("stroke", '#fff')
           .attr("fill", "rgb(224, 230, 235)")
 
+        // segment-text
         const segmentTextBox = segmentGroup
           .append('g')
           .attr('radar-segment-text', '')
@@ -254,7 +255,7 @@ class RadarChart extends React.Component<any> {
           .attr("fill-opacity", '0.8')
           .attr("transform",
             (d: DimensionInterface) =>
-              `translate(0, 0) rotate(${d.position.angle > 90 ? '-90':'90'})`)
+              `rotate(${d.position.angle > 90 ? '-90':'90'})`)
           .attr("d", 'M 0 0 L 10 5 L 0 10 z');
         segmentTextBox  
           .append('text')
@@ -269,24 +270,56 @@ class RadarChart extends React.Component<any> {
           .attr("font-size" ,"16")
           .attr("font-weight","700")
           .text((d:DimensionInterface)=> d.name);
+          
+        // segment-line
+        segmentGroup
+            .append('g')
+            .attr('radar-segment-line', '')
+            .append('line')
+            .attr('stroke-width', 2)
+            .attr('stroke', '#dde6ee')
+            .attr('x1', 0)
+            .attr('y1', 0)
+            .attr('x2', innerRadius + 12)
+            .attr('y2', 0)
+            .attr('transform', 
+              (d : DimensionInterface) => 
+              `rotate(${d.position.angle}) translate(0, 0)`)
+            .attr('style', 'opacity: 1; transition: opacity 1000ms ease 0s, transform 1000ms ease 0s; pointer-events: none;');
+
+        
         /* --------------------- */
 
         /* == render stage ring == */
-        svg
+        const ringGroup = svg
           .append("g")
           .attr("radar-ring-group", '')
           .attr("fill", 'none')
-          .selectAll('circle')
-          .data(this.rings)
+          .selectAll('g')
+          .data(this.stages.values())
           .enter()
+          .append('g')
+          .attr('radar-ring', '');
+        ringGroup
           .append('circle')
+          .attr("id", (stage:StageInterface) => `radar-ring-${stage.id}`)
           .attr("stroke", "#000")
+          .attr('stroke-width', 1)
           .attr("stroke-opacity", 0.5)
-          .attr('r', function(d:number) {return d;})
+          .attr('fill-opacity', 1)
+          .attr('fill', 'none')
+          .attr('style','transition: opacity 300ms ease-in-out 0s; opacity: 1;')
+          .attr('r',  (stage:StageInterface) => stage.ring.ringRadius)
+        ringGroup
+          .append('text')
+          .attr('radar-ring-text', '')
+          .attr('text-anchor', 'middle')
+          .attr('fill', '#000')
+          .attr('style', 'opacity: 1;')
+          .attr('dy', (stage : StageInterface) => 15 - stage.ring.ringRadius)
+          .text((stage: StageInterface) => stage.name);
+
         /* ----------------------- */
-
-
-
     }
   
     render() {
