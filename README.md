@@ -1,4 +1,4 @@
-# Polaris Techonology Radar
+# Polaris Technology Radar
 A static site generator for Polaris Technology Radar. And We can learn what is technology radar from [Thoughtworks](https://www.thoughtworks.com/radar)
 
 # first step
