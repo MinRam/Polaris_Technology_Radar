@@ -1,0 +1,151 @@
+{
+    "name":"TemplateRadar",
+    "type": "Polaris-Technology-Radar",
+    "author": "MinRam",
+    "version": "1.0",
+    "source": "https://github.com/MinRam/Polaris_Techonology_Radar",
+    "plugins": {},
+    "radar-data": {
+        "coordinate": "cartesian/polar/relative",
+        "dimensions": [
+            {
+                "id": "technology",
+                "name": "Technology"
+            },
+            {
+                "id": "tool",
+                "name": "Tool"
+            },
+            {
+                "id": "platform",
+                "name": "Platform"
+            },
+            {
+                "id": "language",
+                "name": "Language"
+            }
+        ],
+        "stages": [
+            {
+                "id": "low",
+                "name": "Low",
+                "level": 3
+            },
+            {
+                "id": "medium",
+                "name": "Medium",
+                "level": 2
+            },
+            {
+                "id": "high",
+                "name": "High",
+                "level": 1
+            }, 
+            {
+                "id": "emergency",
+                "name": "Emergency",
+                "level": 0
+            }
+        ]
+    },
+    "elements": [
+        {
+            "id": "1",
+            "name": "xxx",
+            "type": "element",
+            "stage": "high",
+            "dimension": "technology"
+        },
+        {
+            "id": "2",
+            "name": "eeee",
+            "type": "element",
+            "stage": "medium",
+            "dimension": "technology"
+        },
+        {
+            "id": "3",
+            "name": "visual studio code",
+            "type": "element",
+            "stage": "low",
+            "dimension": "tool"
+        },
+        {
+            "id": "4",
+            "name": "c++",
+            "type": "element",
+            "stage": "medium",
+            "dimension": "language"
+        },
+        {
+            "id": "5",
+            "name": "Stackoverflow",
+            "type": "element",
+            "stage": "high",
+            "dimension": "platform"
+        },
+        {
+            "id": "6",
+            "name": "Github",
+            "type": "element",
+            "stage": "high",
+            "dimension": "platform"
+        },
+        {
+            "id": "7",
+            "name": "Segment",
+            "type": "element",
+            "stage": "high",
+            "dimension": "platform"
+        },
+        {
+            "id": "8",
+            "name": "CSDN",
+            "type": "element",
+            "stage": "emergency",
+            "dimension": "platform"
+        },
+        {
+            "id": "9",
+            "name": "Page",
+            "type": "element",
+            "stage": "high",
+            "dimension": "platform"
+        },
+        {
+            "id": "10",
+            "name": "Google",
+            "type": "element",
+            "stage": "high",
+            "dimension": "platform"
+        },
+        {
+            "id": "11",
+            "name": "Test",
+            "type": "element",
+            "stage": "high",
+            "dimension": "platform"
+        },
+        {
+            "id": "12",
+            "name": "What",
+            "type": "element",
+            "stage": "high",
+            "dimension": "platform"
+        },
+        {
+            "id": "13",
+            "name": "Course",
+            "type": "element",
+            "stage": "high",
+            "dimension": "platform"
+        },
+        {
+            "id": "14",
+            "name": "Coursesefe",
+            "type": "element",
+            "stage": "low",
+            "dimension": "tool"
+        }
+    ]
+}
