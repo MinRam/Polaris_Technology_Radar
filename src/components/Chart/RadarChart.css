@@ -1,0 +1,5 @@
+
+.labels-line-mode:hover .radar-segment-arc {
+    fill: #066592;
+    transition: fill .6s ease;
+}

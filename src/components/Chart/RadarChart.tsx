@@ -202,7 +202,8 @@ class RadarChart extends React.Component<any> {
           .enter()
           .append('g')
           .attr('radar-segment', '')
-          .attr('dimension', d => d.name);
+          .attr('dimension', d => d.name)
+          .attr('class', 'labels-line-mode');
         
         // segment-arc
         var arcPath = d3.arc()
@@ -227,6 +228,7 @@ class RadarChart extends React.Component<any> {
           .append('g')
           .attr('radar-segment-arc', '')
           .append('path')
+          .attr('class', 'radar-segment-arc')
           .attr("d", (d: DimensionInterface) =>{
             return arcPath(
               {
@@ -286,8 +288,6 @@ class RadarChart extends React.Component<any> {
               (d : DimensionInterface) => 
               `rotate(${d.position.angle}) translate(0, 0)`)
             .attr('style', 'opacity: 1; transition: opacity 1000ms ease 0s, transform 1000ms ease 0s; pointer-events: none;');
-
-        
         /* --------------------- */
 
         /* == render stage ring == */
@@ -318,7 +318,6 @@ class RadarChart extends React.Component<any> {
           .attr('style', 'opacity: 1;')
           .attr('dy', (stage : StageInterface) => 15 - stage.ring.ringRadius)
           .text((stage: StageInterface) => stage.name);
-
         /* ----------------------- */
     }
   
