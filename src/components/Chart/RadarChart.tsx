@@ -1,5 +1,6 @@
 import React from "react";
 import * as d3 from 'd3';
+import './RadarChart.css';
 
 /* const define */
 const svgId = 'radar-chart-svg';
@@ -144,7 +145,6 @@ class RadarChart extends React.Component<any> {
           .attr('fill', '#98BB00')
           .attr('stroke', '#fff')
           .attr('width', .7)
-
         /* ------------------- */
 
         /* == render radar label == */
